@@ -24,7 +24,10 @@ class hub_serial:
         if patience >= 0:
             try:   
                 self.ser = serial.Serial(self.comm_port, self.baud_rate, timeout=self.timeout)
+                time.sleep(0.03)
                 self.ser.flushInput()
+                self.ser.flushOutput()
+                time.sleep(0.03)
             except:
                 try:
                     self.ser.close()
@@ -35,6 +38,9 @@ class hub_serial:
             print("Error: cannot connect to the Hub\n")
             
     def reset_device(self):
+        self.ser.flushInput()
+        self.ser.flushOutput()
+        time.sleep(0.03)
         self.ser.setDTR(False) 
         time.sleep(0.03)    
         self.ser.setDTR(True)  
@@ -52,9 +58,6 @@ class hub_serial:
         elif patience < 0:
             return
         # print(f'patience = {patience}\n')
-        time.sleep(0.03)
-        self.ser.flushInput()
-        time.sleep(0.03)
         ser_bytes = self.ser.readline()
         decoded_bytes = (ser_bytes[0:len(ser_bytes)-2].decode("ISO-8859-1"))
         try:
@@ -62,7 +65,14 @@ class hub_serial:
         except:
             # self.get_message(patience = patience-1)
             pass
-    
+    def send_object(self, json_obj = {}):
+        if json_obj == {}:
+            print("Please send something useful, thank you")
+            return
+        mesg_to_send = json.dumps(json_obj).encode('utf-8')
+        self.ser.write(mesg_to_send)
+        
+        pass
 
 # ser = serial.Serial('COM7', 115200, timeout=10)
 # ser.flushInput()
@@ -76,13 +86,25 @@ class hub_serial:
 
 # ser.close()
 
-
-hub = hub_serial('COM7', 115200, timeout=10)
-
-for i in range(100):
-    print(f'In loop {i}\n')
-    hub.connect_serial()
-    hub.get_message()
-    print(hub.message)
+try:
     hub.close_connection()
-    time.sleep(0.5)
+except:
+    pass
+hub = hub_serial('COM7', 115200, timeout=10)
+try:
+    print("Connecting Serial...")
+    hub.connect_serial()
+    command_object = [{'command':'Sleep60','id':['5A:9E:AD:F5:06:69','9C:9E:BD:F4:06:69']},{'command':'Callback','id':['7C:9E:BD:F4:06:68']}]
+    hub.send_object(command_object)
+    for i in range(10):
+        print(f'In loop {i}\n')
+        # hub.connect_serial()
+        hub.get_message()
+        print(hub.message)
+        
+        # hub.close_connection()
+        time.sleep(0.5)
+except:
+    pass
+hub.close_connection()
+# hub.reset_device()
