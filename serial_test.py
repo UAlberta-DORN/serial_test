@@ -94,9 +94,9 @@ hub = hub_serial('COM7', 115200, timeout=10)
 try:
     print("Connecting Serial...")
     hub.connect_serial()
-    command_object = [{'command':'Sleep60','id':['5A:9E:AD:F5:06:69','9C:9E:BD:F4:06:69']},{'command':'Callback','id':['7C:9E:BD:F4:06:68']}]
+    command_object = [{'command':'Callback','id':["3C:61:05:3D:D3:79", "3C:61:05:3D:D4:ED", "7C:9E:BD:F4:06:69"]}]
     hub.send_object(command_object)
-    for i in range(10):
+    for i in range(100):
         print(f'In loop {i}\n')
         # hub.connect_serial()
         hub.get_message()
